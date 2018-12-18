@@ -1,0 +1,148 @@
+swagger: "2.0"
+info:
+  version: "0.3.0"
+  title: API de comunicação da SES - Secretaria de saúde do GDF
+# during dev, should point to your local machine
+host: localhost
+# basePath prefixes all resource paths 
+basePath: /
+# 
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+securityDefinitions:
+ Bearer:
+  description: |
+   Autenticação da API se baseia nos seguintes recursos:
+
+   - API Key
+   - OAuth2
+
+   O acesso a API ncecessita de um token JWT válido que deve ser passado no cabeçalho no campo 'Authorization'.
+
+   Um token JWT válido é gerado pela API e retornado na resposta a rota
+   /login uma vez que possua um email & senha válido.
+
+   A seguinte sintaxe deve ser utilizada no cabeçalho das requisições 'Authorization' :
+       Bearer: xxxxxx.yyyyyyy.zzzzzz
+  type: apiKey
+  name: Authorization
+  in: header
+paths:
+  /api/email:
+    x-swagger-router-controller: email
+    post:
+      description: Envia email
+      # used as the method name of the controller
+      operationId: sendEmail
+      tags:
+        - Outras Consultas
+      security:
+        - Bearer: []
+      parameters:
+        -
+         in: body
+         name: body
+         description: Informação sobre envio do email
+         required: true
+         schema:
+          $ref: '#/definitions/Email'
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/Sucesso"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"    
+  /api/cnes:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: cnes
+    get:
+      description: Returns lista de estabelecimentos pesquisados
+      # used as the method name of the controller
+      operationId: getCNES
+      tags:
+        - Outras Consultas
+      parameters:
+        - name: codigo
+          in: query
+          description: Codigo do cnes para pesquisa
+          required: false
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/ConsultaListaResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /api/fila-leitos:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: regulacao
+    get:
+      description: Returns lista de pacientes na fila de leitos de UTI 
+      # used as the method name of the controller
+      operationId: getFilaLeitosUTI
+      tags:
+        - Outras Consultas
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/ConsultaArray"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /swagger:
+    x-swagger-pipe: swagger_raw
+# complex objects have schema definitions
+definitions:
+  Email:
+    type: object
+  Sucesso:
+    type: object
+    properties:
+      message:
+        type: string
+  ConsultaListaResponse:
+    type: object
+    properties:
+      rows:
+        type: integer
+      list:
+        type: array
+        items:
+          type: object
+      meta:
+        type: object
+  ConsultaArray:
+    type: array
+    items:
+        type: object
+  ErrorResponse:
+    required:
+      - codret
+      - mensagem
+    properties:
+      codret:
+        type: number
+      mensagem:
+        type: string

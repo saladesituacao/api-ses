@@ -1,0 +1,62 @@
+# swagger configuration file
+
+# values in the swagger hash are system configuration for swagger-node
+swagger:
+
+  fittingsDirs: [ api/fittings ]
+  defaultPipe: null
+  swaggerControllerPipe: swagger_controllers  # defines the standard processing pipe for controllers
+
+  # values defined in the bagpipes key are the bagpipes pipes and fittings definitions
+  # (see https://github.com/apigee-127/bagpipes)
+  bagpipes:
+
+    _router:
+      name: swagger_router
+      mockMode: false
+      mockControllersDirs: [ api/mocks ]
+      controllersDirs: [ api/controllers ]
+
+    _swagger_validate:
+      name: swagger_validator
+      validateResponse: true
+
+    # pipe for all swagger-node controllers
+    swagger_controllers:
+      - onError: json_error_handler
+      - cors
+      - swagger_security
+      - _swagger_validate
+      - express_compatibility
+      - _router
+
+    # pipe to serve swagger (endpoint is in swagger.yaml)
+    swagger_raw:
+      name: swagger_raw
+
+# any other values in this file are just loaded into the config for application access...
+config:
+  schema_login: windows
+  url: ldap://10.86.1.80/DC=saude,DC=df,DC=gov,DC=br
+  bindDn: sala.situacao@saude.df.gov.br
+  bindCredentials: salasituacao@dgie
+  searchBase: DC=saude,DC=df,DC=gov,DC=br
+
+  company: Secretaria Estadual de Saúde - SES
+  title: Sala de Situação - API de comunicação
+  description: API responsável pela publicação de serviços referentes ao desenvolvimento da Sala de Situação.
+  secret: bZJc2sWbQLKos6GkHn/VB9oXwQt8S0R0kRvJ5/xJ89E=
+  host: api.saude.df.gov.br
+  port: 10010
+  schema: 
+  context: /ses
+  hostdb: banco
+  stage:
+    database: stage
+    user: cnes_app
+    password: gFGcZxyrnc8pT8df
+  sistemas:
+    database: dbsistemas
+    user: cnes_app
+    password: gFGcZxyrnc8pT8df
+    schema: dbcomum  
